@@ -42,7 +42,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api project(':player-common')
 }
 
 //apply from: new File(rootProject.projectDir, "tools/gradle-on-demand.gradle");
