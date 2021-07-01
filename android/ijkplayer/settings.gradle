@@ -1,3 +1,4 @@
+include ':multitype'
 include ':app'
 include ':player-common'
 include ':ijkplayer-example'
