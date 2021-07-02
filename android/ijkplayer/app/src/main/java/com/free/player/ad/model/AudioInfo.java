@@ -3,7 +3,7 @@ package com.free.player.ad.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Video implements Parcelable {
+public class AudioInfo implements Parcelable {
     private int id;
     private String path;
     private String name;
@@ -12,7 +12,7 @@ public class Video implements Parcelable {
     private long date;
     private long duration;
 
-    public Video() {
+    public AudioInfo() {
     }
 
     public int getId() {
@@ -87,7 +87,7 @@ public class Video implements Parcelable {
         dest.writeLong(duration);
     }
 
-    protected Video(Parcel in) {
+    protected AudioInfo(Parcel in) {
         id = in.readInt();
         path = in.readString();
         name = in.readString();
@@ -97,15 +97,15 @@ public class Video implements Parcelable {
         duration = in.readLong();
     }
 
-    public static final Creator<Video> CREATOR = new Creator<Video>() {
+    public static final Creator<AudioInfo> CREATOR = new Creator<AudioInfo>() {
         @Override
-        public Video createFromParcel(Parcel in) {
-            return new Video(in);
+        public AudioInfo createFromParcel(Parcel in) {
+            return new AudioInfo(in);
         }
 
         @Override
-        public Video[] newArray(int size) {
-            return new Video[size];
+        public AudioInfo[] newArray(int size) {
+            return new AudioInfo[size];
         }
     };
 

@@ -13,6 +13,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.Ijkplayer">
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -21,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+<!--        <provider-->
+<!--            android:name=".TransferFileProvider"-->
+<!--            android:authorities="${applicationId}.mxtransfer.fileprovider"-->
+<!--            android:exported="false"-->
+<!--            android:grantUriPermissions="true">-->
+<!--            <meta-data-->
+<!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
+<!--                android:resource="@xml/share_file_app_paths" />-->
+<!--        </provider>-->
     </application>
 
 </manifest>

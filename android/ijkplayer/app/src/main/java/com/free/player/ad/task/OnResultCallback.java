@@ -1,6 +1,6 @@
 package com.free.player.ad.task;
 
-public interface ResultCallback<T> {
+public interface OnResultCallback<T> {
 
     void onFail(Exception e);
 
