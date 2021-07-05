@@ -34,5 +34,6 @@ dependencies {
     implementation project(':player-java')
     implementation project(':player-native')
     implementation project(':player-common')
+    implementation project(':player-exo')
     implementation project(':multitype')
 }

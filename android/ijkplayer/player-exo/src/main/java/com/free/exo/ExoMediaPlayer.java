@@ -23,32 +23,34 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 
 
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.RenderersFactory;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.audio.AudioAttributes;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
+import com.google.android.exoplayer2.source.MediaSourceFactory;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.util.EventLogger;
+
 import java.io.FileDescriptor;
 import java.util.Map;
 
 import tv.danmaku.ijk.media.player.AbstractMediaPlayer;
-import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.MediaInfo;
 import tv.danmaku.ijk.media.player.misc.IjkTrackInfo;
 
 public class ExoMediaPlayer extends AbstractMediaPlayer {
-    private Context mAppContext;
-//    private DemoPlayer mInternalPlayer;
-//    private EventLogger mEventLogger;
-    private String mDataSource;
+    private Context context;
+    private SimpleExoPlayer internalPlayer;
+    private String dataSource;
     private int mVideoWidth;
     private int mVideoHeight;
-    private Surface mSurface;
-
-//    private RendererBuilder mRendererBuilder;
-
+    private DataSource.Factory dataSourceFactory;
     public ExoMediaPlayer(Context context) {
-        mAppContext = context.getApplicationContext();
-
-//        mDemoListener = new DemoPlayerListener();
-
-//        mEventLogger = new EventLogger();
-//        mEventLogger.startSession();
+        this.context = context.getApplicationContext();
     }
 
     @Override
@@ -61,15 +63,15 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
 
     @Override
     public void setSurface(Surface surface) {
-        mSurface = surface;
-//        if (mInternalPlayer != null)
-//            mInternalPlayer.setSurface(surface);
+//        mSurface = surface;
+        if (internalPlayer != null) {
+            internalPlayer.setVideoSurface(surface);
+        }
     }
 
     @Override
     public void setDataSource(Context context, Uri uri) {
-        mDataSource = uri.toString();
-//        mRendererBuilder = getRendererBuilder();
+        dataSource = uri.toString();
     }
 
     @Override
@@ -80,7 +82,7 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
 
     @Override
     public void setDataSource(String path) {
-        setDataSource(mAppContext, Uri.parse(path));
+        setDataSource(context, Uri.parse(path));
     }
 
     @Override
@@ -91,46 +93,43 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
 
     @Override
     public String getDataSource() {
-        return mDataSource;
+        return dataSource;
     }
 
     @Override
     public void prepareAsync() throws IllegalStateException {
-//        if (mInternalPlayer != null)
-//            throw new IllegalStateException("can't prepare a prepared player");
-//
-//        mInternalPlayer = new DemoPlayer(mRendererBuilder);
-//        mInternalPlayer.addListener(mDemoListener);
-//        mInternalPlayer.addListener(mEventLogger);
-//        mInternalPlayer.setInfoListener(mEventLogger);
-//        mInternalPlayer.setInternalErrorListener(mEventLogger);
-//
-//        if (mSurface != null)
-//            mInternalPlayer.setSurface(mSurface);
-//
-//        mInternalPlayer.prepare();
-//        mInternalPlayer.setPlayWhenReady(false);
+        if (internalPlayer != null) {
+            throw new IllegalStateException("can't prepare a prepared player");
+        }
+
+        initPlayer(false);
+        internalPlayer.setMediaItem(new MediaItem.Builder().setUri(dataSource).build());
+        internalPlayer.prepare();
+        start();
     }
 
     @Override
     public void start() throws IllegalStateException {
-//        if (mInternalPlayer == null)
-//            return;
-//        mInternalPlayer.setPlayWhenReady(true);
+        if (internalPlayer == null) {
+            return;
+        }
+        internalPlayer.setPlayWhenReady(true);
     }
 
     @Override
     public void stop() throws IllegalStateException {
-//        if (mInternalPlayer == null)
-//            return;
-//        mInternalPlayer.release();
+        if (internalPlayer == null) {
+            return;
+        }
+        internalPlayer.release();
     }
 
     @Override
     public void pause() throws IllegalStateException {
-//        if (mInternalPlayer == null)
-//            return;
-//        mInternalPlayer.setPlayWhenReady(false);
+        if (internalPlayer == null) {
+            return;
+        }
+        internalPlayer.setPlayWhenReady(false);
     }
 
     @Override
@@ -174,7 +173,11 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
 //            default:
 //                return false;
 //        }
-        return false;
+        if (internalPlayer == null) {
+            return false;
+        }
+
+        return internalPlayer.getPlayWhenReady();
     }
 
     @Override
@@ -182,23 +185,25 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
 //        if (mInternalPlayer == null)
 //            return;
 //        mInternalPlayer.seekTo(msec);
+        if (internalPlayer == null) {
+            return;
+        }
+        internalPlayer.seekTo(msec);
     }
 
     @Override
     public long getCurrentPosition() {
-//        if (mInternalPlayer == null)
-//            return 0;
-//        return mInternalPlayer.getCurrentPosition();
+        if (internalPlayer == null)
+            return 0;
+        return internalPlayer.getCurrentPosition();
 
-        return 0;
     }
 
     @Override
     public long getDuration() {
-//        if (mInternalPlayer == null)
-//            return 0;
-//        return mInternalPlayer.getDuration();
-        return 0;
+        if (internalPlayer == null)
+            return 0;
+        return internalPlayer.getDuration();
     }
 
     @Override
@@ -213,17 +218,17 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
 
     @Override
     public void reset() {
-//        if (mInternalPlayer != null) {
-//            mInternalPlayer.release();
-//            mInternalPlayer.removeListener(mDemoListener);
-//            mInternalPlayer.removeListener(mEventLogger);
-//            mInternalPlayer.setInfoListener(null);
-//            mInternalPlayer.setInternalErrorListener(null);
-//            mInternalPlayer = null;
-//        }
+        if (internalPlayer != null) {
+            internalPlayer.release();
+            internalPlayer.removeListener(eventListener);
+//            internalPlayer.removeListener(mEventLogger);
+//            internalPlayer.setInfoListener(null);
+//            internalPlayer.setInternalErrorListener(null);
+            internalPlayer = null;
+        }
 
-        mSurface = null;
-        mDataSource = null;
+//        mSurface = null;
+        dataSource = null;
         mVideoWidth = 0;
         mVideoHeight = 0;
     }
@@ -280,14 +285,14 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
 
     @Override
     public void release() {
-//        if (mInternalPlayer != null) {
-//            reset();
-//
+        if (internalPlayer != null) {
+            reset();
+
 //            mDemoListener = null;
 //
 //            mEventLogger.endSession();
 //            mEventLogger = null;
-//        }
+        }
     }
 
 //    public int getBufferedPercentage() {
@@ -392,4 +397,44 @@ public class ExoMediaPlayer extends AbstractMediaPlayer {
     }*/
 
 //    private DemoPlayerListener mDemoListener;
+
+    private DefaultTrackSelector trackSelector;
+    private void initPlayer(boolean startAutoPlay) {
+        dataSourceFactory = Util.getDataSourceFactory(/* context= */ context);
+
+//        boolean preferExtensionDecoders =
+//                intent.getBooleanExtra(IntentUtil.PREFER_EXTENSION_DECODERS_EXTRA, false);
+        RenderersFactory renderersFactory =
+                Util.buildRenderersFactory(/* context= */ context, true);
+        MediaSourceFactory mediaSourceFactory =
+                new DefaultMediaSourceFactory(dataSourceFactory);
+//                        .setAdsLoaderProvider(this::getAdsLoader)
+//                        .setAdViewProvider(playerView);
+
+        trackSelector = new DefaultTrackSelector(/* context= */ context);
+        DefaultTrackSelector.ParametersBuilder builder =
+                new DefaultTrackSelector.ParametersBuilder(/* context= */ context);
+        DefaultTrackSelector.Parameters trackSelectorParameters = builder.build();
+        trackSelector.setParameters(trackSelectorParameters);
+//        lastSeenTrackGroupArray = null;
+        internalPlayer =
+                new SimpleExoPlayer.Builder(/* context= */ context, renderersFactory)
+                        .setMediaSourceFactory(mediaSourceFactory)
+                        .setTrackSelector(trackSelector)
+                        .build();
+        internalPlayer.addListener(eventListener);
+        internalPlayer.addAnalyticsListener(new EventLogger(trackSelector));
+        internalPlayer.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ true);
+        internalPlayer.setPlayWhenReady(startAutoPlay);
+    }
+
+
+    private final Player.EventListener eventListener = new Player.EventListener() {
+        @Override
+        public void onTimelineChanged(Timeline timeline, int reason) {
+
+        }
+    };
+
+
 }

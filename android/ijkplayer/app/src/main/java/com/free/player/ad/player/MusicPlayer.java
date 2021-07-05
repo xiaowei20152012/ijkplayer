@@ -5,6 +5,8 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 
+import com.free.exo.ExoMediaPlayer;
+
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -30,7 +32,7 @@ public class MusicPlayer {
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
-        mediaPlayer = createPlayer(PlayerType.IJK_MEDIA_PLAYER);
+        mediaPlayer = createPlayer(PlayerType.EXO_MEDIA_PLAYER);
 
         mediaPlayer.setOnPreparedListener(preparedListener);
         mediaPlayer.setOnVideoSizeChangedListener(sizeChangedListener);
@@ -109,7 +111,7 @@ public class MusicPlayer {
                 player = ijkPlayer;
                 break;
             case PlayerType.EXO_MEDIA_PLAYER:
-
+                player = new ExoMediaPlayer(context);
                 break;
             default:
         }
