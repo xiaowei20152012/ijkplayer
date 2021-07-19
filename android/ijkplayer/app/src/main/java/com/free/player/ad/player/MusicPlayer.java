@@ -32,7 +32,7 @@ public class MusicPlayer {
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
-        mediaPlayer = createPlayer(PlayerType.EXO_MEDIA_PLAYER);
+        mediaPlayer = createPlayer(PlayerType.IJK_MEDIA_PLAYER);
 
         mediaPlayer.setOnPreparedListener(preparedListener);
         mediaPlayer.setOnVideoSizeChangedListener(sizeChangedListener);
@@ -56,7 +56,7 @@ public class MusicPlayer {
             }
         }
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer.setScreenOnWhilePlaying(true);
+//        mediaPlayer.setScreenOnWhilePlaying(true);
         mediaPlayer.prepareAsync();
     }
 
